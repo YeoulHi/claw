@@ -57,6 +57,8 @@ export class DiscordGatewayAdapter implements MailAlertPoster {
   private readonly ipc: GatewayIpc;
   private started = false;
   private stopped = false;
+  /** In-progress wiki-scan task (if any). Awaited in stop() before destroying the Discord client. */
+  private wikiScanTask: Promise<void> | null = null;
   /** channelId → cleanup function for ongoing typing loops */
   private typingLoops = new Map<string, () => void>();
 
@@ -167,6 +169,24 @@ export class DiscordGatewayAdapter implements MailAlertPoster {
   async stop(): Promise<void> {
     if (!this.started || this.stopped) return;
     this.stopped = true;
+
+    // Wait for in-progress wiki-scan before destroying the Discord client.
+    // The scan posts results via thread.send(), which needs the client alive.
+    if (this.wikiScanTask) {
+      log.info('wiki-scan: shutdown pending — waiting for in-progress scan (max 3 min)');
+      try {
+        await Promise.race([
+          this.wikiScanTask,
+          new Promise<void>((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 3 * 60 * 1000),
+          ),
+        ]);
+        log.info('wiki-scan: completed before Discord client shutdown');
+      } catch (err) {
+        log.warn({ err: (err as Error).message }, 'wiki-scan: timed out or failed during shutdown wait');
+      }
+    }
+
     // Stop all typing loops
     for (const cleanup of this.typingLoops.values()) {
       cleanup();
@@ -652,6 +672,19 @@ export class DiscordGatewayAdapter implements MailAlertPoster {
   // -------------------------------------------------------------------------
 
   async triggerWikiScan(): Promise<void> {
+    if (this.wikiScanTask) {
+      log.warn('wiki-scan: already in progress, skipping duplicate trigger');
+      return;
+    }
+    this.wikiScanTask = this._doWikiScan();
+    try {
+      await this.wikiScanTask;
+    } finally {
+      this.wikiScanTask = null;
+    }
+  }
+
+  private async _doWikiScan(): Promise<void> {
     const channelId = this.config.wikiChannelId;
     if (!channelId) return;
 
@@ -687,6 +720,7 @@ export class DiscordGatewayAdapter implements MailAlertPoster {
     const systemAppend = buildWikiScanSystemAppend(sourcesPath);
     const prompt = '등록된 wiki 소스들에서 오늘의 신규 지식 후보를 탐색하고 보고해줘.';
 
+    log.info({ threadId }, 'wiki-scan: thread created, invoking Claude');
     const stopTyping = this.startGatewayTyping(threadId);
     try {
       logEvent(this.db, {
@@ -711,6 +745,8 @@ export class DiscordGatewayAdapter implements MailAlertPoster {
         await thread.send(`❌ wiki 스캔 실패: ${e.message.slice(0, 1500)}`);
         return;
       }
+
+      log.info({ threadId, durationMs: result.durationMs, textLen: result.text.length }, 'wiki-scan: Claude completed, posting results');
 
       logUsage(this.db, {
         sessionId: result.sessionId,
