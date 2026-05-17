@@ -1,6 +1,9 @@
 node_modules/
 dist/
-data/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/router-scratch
 logs/
 .env
 .env.local

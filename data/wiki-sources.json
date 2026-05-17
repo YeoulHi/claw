@@ -1,0 +1,95 @@
+{
+  "sources": [
+    {
+      "name": "Lenny's Newsletter",
+      "url": "https://www.lennysnewsletter.com",
+      "rss": "https://www.lennysnewsletter.com/feed",
+      "type": "newsletter"
+    },
+    {
+      "name": "Ali Afridi — Sandhill",
+      "url": "https://www.sandhill.io",
+      "rss": "https://www.sandhill.io/feed",
+      "type": "newsletter"
+    },
+    {
+      "name": "Chamath",
+      "url": "https://chamath.substack.com",
+      "rss": "https://chamath.substack.com/feed",
+      "type": "newsletter"
+    },
+    {
+      "name": "Simon Willison",
+      "url": "https://simonwillison.net",
+      "rss": "https://simonwillison.net/atom/everything/",
+      "type": "newsletter"
+    },
+    {
+      "name": "코난쌤 블로그",
+      "url": "https://jkf87.github.io",
+      "rss": "https://jkf87.github.io/index.xml",
+      "type": "blog"
+    },
+    {
+      "name": "Anthropic Engineering",
+      "url": "https://www.anthropic.com/engineering",
+      "type": "blog"
+    },
+    {
+      "name": "Anthropic News",
+      "url": "https://www.anthropic.com/news",
+      "type": "blog"
+    },
+    {
+      "name": "OpenAI News",
+      "url": "https://openai.com/news",
+      "rss": "https://openai.com/news/rss.xml",
+      "type": "blog"
+    },
+    {
+      "name": "Geek News (X)",
+      "url": "https://x.com/GeekNewsHada",
+      "type": "x"
+    },
+    {
+      "name": "Claude (X)",
+      "url": "https://x.com/claudeai",
+      "type": "x"
+    },
+    {
+      "name": "Claude Code Community (X)",
+      "url": "https://x.com/claude_code",
+      "type": "x"
+    },
+    {
+      "name": "Google AI (X)",
+      "url": "https://x.com/GoogleAI",
+      "type": "x"
+    },
+    {
+      "name": "OpenAI (X)",
+      "url": "https://x.com/OpenAI",
+      "type": "x"
+    },
+    {
+      "name": "OpenAI Developers (X)",
+      "url": "https://x.com/OpenAIDevs",
+      "type": "x"
+    },
+    {
+      "name": "빌더조쉬 (YouTube)",
+      "url": "https://www.youtube.com/@builderjoshkim/videos",
+      "type": "youtube"
+    },
+    {
+      "name": "OpenAI (YouTube)",
+      "url": "https://www.youtube.com/@openai/videos",
+      "type": "youtube"
+    },
+    {
+      "name": "Anthropic (YouTube)",
+      "url": "https://www.youtube.com/@anthropic-ai/videos",
+      "type": "youtube"
+    }
+  ]
+}
