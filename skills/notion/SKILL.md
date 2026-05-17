@@ -27,9 +27,11 @@ PATH에 없을 경우 항상 전체 경로 `~/.local/bin/ntn`으로 호출한다
 
 ## 인증
 
-- `ntn login` — 브라우저 인증 (최초 1회)
-- 환경변수 `NOTION_API_TOKEN`으로 토큰 직접 지정 가능
-- `NOTION_KEYRING=0` 설정 시 파일 기반 인증 (`~/.config/notion/auth.json`) 사용
+`NOTION_API_TOKEN`이 `.env`에 설정되어 있으므로 `ntn login` 없이 바로 사용 가능.
+모든 ntn 명령 실행 시 환경변수가 자동 로드된 상태여야 한다 (claw 프로세스는 `.env`를 로드함).
+
+- `ntn login` — 브라우저 인증 (PAT 방식, 워크스페이스 정책에 따라 차단될 수 있음)
+- 환경변수 `NOTION_API_TOKEN` — integration token 방식 (현재 사용 중)
 
 ## 주요 명령어
 
