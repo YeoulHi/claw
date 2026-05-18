@@ -71,7 +71,7 @@ function buildArgs(opts: CodexRunOptions): string[] {
   // '--json' emits JSONL to stdout.
   // '--danger-full-access' bypasses sandbox (equivalent to claude's --dangerously-skip-permissions).
   // '-' tells codex to read the prompt from stdin.
-  const args: string[] = ['exec', '--json', '--danger-full-access'];
+  const args: string[] = ['exec', '--json', '--sandbox', 'danger-full-access'];
   if (opts.resume) {
     args.push('--session-id', opts.resume);
   }
