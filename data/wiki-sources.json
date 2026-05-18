@@ -90,6 +90,11 @@
       "name": "Anthropic (YouTube)",
       "url": "https://www.youtube.com/@anthropic-ai/videos",
       "type": "youtube"
+    },
+    {
+      "name": "Matt Pocock (YouTube)",
+      "url": "https://www.youtube.com/@mattpocockuk/videos",
+      "type": "youtube"
     }
   ]
 }
