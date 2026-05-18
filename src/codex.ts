@@ -94,7 +94,9 @@ interface CodexEvent {
     role?: string;
     content?: Array<{ type?: string; text?: string }> | string;
   };
+  // session_summary (legacy) or session_meta (v0.130+)
   session_id?: string;
+  payload?: { id?: string };
   rollout_path?: string;
 }
 
@@ -140,6 +142,9 @@ function newAccumulator(): ParseAccumulator {
 function consumeEvent(acc: ParseAccumulator, event: CodexEvent): void {
   if (event.type === 'session_summary') {
     if (event.session_id) acc.sessionId = event.session_id;
+  } else if (event.type === 'session_meta') {
+    // v0.130+: session ID is in payload.id
+    if (event.payload?.id) acc.sessionId = event.payload.id;
   } else if (event.type === 'item.completed') {
     const t = extractItemText(event);
     if (t) acc.text += t;
@@ -147,22 +152,25 @@ function consumeEvent(acc: ParseAccumulator, event: CodexEvent): void {
 }
 
 async function lookupLatestCodexSessionId(): Promise<string> {
-  // Codex stores sessions in ~/.codex/sessions/
+  // Codex stores sessions in ~/.codex/sessions/ (nested: YYYY/MM/DD/rollout-*.jsonl)
   const sessionsDir = path.join(os.homedir(), '.codex', 'sessions');
-  const entries = await fs.readdir(sessionsDir).catch(() => [] as string[]);
+  const entries = await fs.readdir(sessionsDir, { recursive: true }).catch(() => [] as string[]);
   let newest = '';
   let newestMtime = 0;
   for (const name of entries) {
-    const full = path.join(sessionsDir, name);
+    const full = path.join(sessionsDir, name as string);
     const stat = await fs.stat(full).catch(() => null);
     if (!stat?.isFile()) continue;
     if (stat.mtimeMs > newestMtime) {
       newestMtime = stat.mtimeMs;
-      newest = name;
+      newest = name as string;
     }
   }
   if (!newest) throw new Error(`no codex session files found in ${sessionsDir}`);
-  return newest.replace(/\.(json|jsonl)$/, '');
+  // Extract UUID from filename: rollout-YYYY-MM-DDTHH-MM-SS-{uuid}.jsonl
+  const basename = path.basename(newest).replace(/\.(json|jsonl)$/, '');
+  const uuidMatch = basename.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  return uuidMatch ? uuidMatch[1] : basename;
 }
 
 export function runCodex(opts: CodexRunOptions): Promise<CodexRunResult> {
