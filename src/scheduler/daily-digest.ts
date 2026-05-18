@@ -70,9 +70,17 @@ function scanUnsentItems(wikiDir: string): DigestItem[] {
   return items;
 }
 
+function todayLabel(): string {
+  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const yy = nowKst.toISOString().slice(2, 4);
+  const mm = nowKst.toISOString().slice(5, 7);
+  const dd = nowKst.toISOString().slice(8, 10);
+  return `${yy}.${mm}.${dd}`;
+}
+
 function buildDigestMessage(items: DigestItem[]): string {
   const lines: string[] = [
-    '**VMC Daily Digest**',
+    `**VMC Daily Digest** (${todayLabel()})`,
     '',
     '> 하루 한번, VibeMafia가 큐레이팅한 AI 소식을 전송합니다.',
     '',
