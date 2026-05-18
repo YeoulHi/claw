@@ -54,6 +54,7 @@ import {
 import type { MessageContext } from '../messenger/types.js';
 import type { MessengerAdapter } from '../messenger/types.js';
 import { downloadAttachments, attachmentNote } from '../attachments.js';
+import { syncNewTopics } from '../wiki/topic-sync.js';
 import { type Artifact } from '../artifact.js';
 import {
   setSenderPolicy,
@@ -1198,6 +1199,7 @@ export class DiscordAdapter implements MessengerAdapter {
         summary: `wiki-ingest isUrl=${isUrl}`,
       });
 
+      const ingestStartMs = Date.now();
       let result;
       try {
         result = await runClaude({
@@ -1235,6 +1237,16 @@ export class DiscordAdapter implements MessengerAdapter {
           log.error({ err: (sendErr as Error).message }, 'failed to post error (wiki-ingest)');
         }
         return;
+      }
+
+      // ingest 완료 후 신규 raw 파일 → context-hub topic 파일 자동 생성 (fire-and-forget)
+      const contextHubPath = this.config.repoChannels.find(
+        (r) => r.fullName === 'vibemafiaclub/context-hub',
+      )?.localPath;
+      if (contextHubPath) {
+        void syncNewTopics(this.config.wikiDir, contextHubPath, ingestStartMs).catch((err) =>
+          log.warn({ err: (err as Error).message }, 'topic-sync: failed after wiki-ingest'),
+        );
       }
 
       logUsage(this.db, {
