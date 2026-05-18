@@ -9,6 +9,7 @@ const DISCORD_API = 'https://discord.com/api/v10';
 interface DigestItem {
   title: string;
   url: string;
+  filePath: string;
 }
 
 function parseFrontmatter(content: string): Record<string, string> {
@@ -25,21 +26,43 @@ function parseFrontmatter(content: string): Record<string, string> {
   return result;
 }
 
-function scanNewItems(wikiDir: string, dateStr: string): DigestItem[] {
+function setFrontmatterField(content: string, key: string, value: string): string {
+  const match = content.match(/^(---\n[\s\S]*?\n---)/);
+  if (!match) return content;
+  const fmBlock = match[1];
+  const keyRegex = new RegExp(`^${key}:.*$`, 'm');
+  let newFm: string;
+  if (keyRegex.test(fmBlock)) {
+    newFm = fmBlock.replace(keyRegex, `${key}: ${value}`);
+  } else {
+    // 마지막 --- 직전에 필드 삽입
+    newFm = fmBlock.replace(/\n---$/, `\n${key}: ${value}\n---`);
+  }
+  return content.replace(fmBlock, newFm);
+}
+
+function markAsSent(filePath: string): void {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const updated = setFrontmatterField(content, 'digest_sent', 'true');
+  fs.writeFileSync(filePath, updated, 'utf-8');
+}
+
+function scanUnsentItems(wikiDir: string): DigestItem[] {
   const rawDir = path.join(wikiDir, 'raw');
   if (!fs.existsSync(rawDir)) return [];
 
   const items: DigestItem[] = [];
   for (const filename of fs.readdirSync(rawDir)) {
     if (!filename.endsWith('.md')) continue;
+    const filePath = path.join(rawDir, filename);
     try {
-      const content = fs.readFileSync(path.join(rawDir, filename), 'utf-8');
+      const content = fs.readFileSync(filePath, 'utf-8');
       const fm = parseFrontmatter(content);
-      if (fm.collected !== dateStr) continue;
+      if (fm.digest_sent === 'true') continue;
       const url = fm.source_url ?? fm.hada_url ?? '';
       if (!url) continue;
       const title = fm.title ?? filename.replace(/\.md$/, '').replace(/-/g, ' ');
-      items.push({ title, url });
+      items.push({ title, url, filePath });
     } catch {
       // 파일 읽기 실패 시 건너뜀
     }
@@ -101,6 +124,31 @@ export class DailyDigestScheduler {
     }
   }
 
+  /** 스케줄러 시간 게이트 없이 즉시 실행 (엔드포인트 수동 트리거용) */
+  async runDigest(): Promise<{ sent: number }> {
+    log.info('daily-digest: running');
+
+    const items = scanUnsentItems(this.wikiDir);
+    if (items.length === 0) {
+      log.info('daily-digest: no unsent items, skipping');
+      return { sent: 0 };
+    }
+
+    const message = buildDigestMessage(items);
+    await postToDiscord(this.vmcBotToken, this.vmcChannelId, message);
+
+    for (const item of items) {
+      try {
+        markAsSent(item.filePath);
+      } catch (err) {
+        log.warn({ err: (err as Error).message, file: item.filePath }, 'daily-digest: markAsSent failed');
+      }
+    }
+
+    log.info({ count: items.length }, 'daily-digest: sent');
+    return { sent: items.length };
+  }
+
   private async check(): Promise<void> {
     const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const dateStr = nowKst.toISOString().slice(0, 10);
@@ -117,18 +165,8 @@ export class DailyDigestScheduler {
     }
 
     this.lastDigestDate = dateStr;
-    log.info({ date: dateStr }, 'daily-digest: running');
-
     try {
-      const items = scanNewItems(this.wikiDir, dateStr);
-      if (items.length === 0) {
-        log.info('daily-digest: no new items today, skipping');
-        return;
-      }
-
-      const message = buildDigestMessage(items);
-      await postToDiscord(this.vmcBotToken, this.vmcChannelId, message);
-      log.info({ count: items.length, date: dateStr }, 'daily-digest: sent');
+      await this.runDigest();
     } catch (err) {
       log.error({ err: (err as Error).message }, 'daily-digest: failed');
     }

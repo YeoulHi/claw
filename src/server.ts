@@ -85,6 +85,27 @@ async function main(): Promise<void> {
     log.info('wiki-scan manually triggered via /admin/wiki-scan');
     res.json({ ok: true, message: 'wiki-scan triggered' });
   });
+
+  // Manual trigger for VMC Daily Digest (requires Authorization: Bearer <DASHBOARD_SECRET>)
+  app.post('/admin/daily-digest', express.json(), (req, res) => {
+    const auth = req.headers['authorization'] ?? '';
+    if (auth !== `Bearer ${config.env.DASHBOARD_SECRET}`) {
+      res.status(401).json({ ok: false, error: 'unauthorized' });
+      return;
+    }
+    if (!dailyDigest) {
+      res.status(400).json({ ok: false, error: 'VMC_BOT_TOKEN / VMC_DIGEST_CHANNEL_ID not configured' });
+      return;
+    }
+    void dailyDigest.runDigest().then((result) => {
+      log.info(result, 'daily-digest manually triggered via /admin/daily-digest');
+    }).catch((err) => {
+      log.error({ err: (err as Error).message }, 'daily-digest trigger failed');
+    });
+    log.info('daily-digest manually triggered via /admin/daily-digest');
+    res.json({ ok: true, message: 'daily-digest triggered' });
+  });
+
   mountDashboard(app, { db, secret: config.env.DASHBOARD_SECRET });
   const server = app.listen(config.env.DASHBOARD_PORT, () => {
     log.info({ port: config.env.DASHBOARD_PORT }, 'dashboard listening');
