@@ -105,6 +105,11 @@
       "name": "AI Engineer (YouTube)",
       "url": "https://www.youtube.com/@aiDotEngineer/videos",
       "type": "youtube"
+    },
+    {
+      "name": "Eric W Tech (YouTube)",
+      "url": "https://www.youtube.com/@EricWTech/videos",
+      "type": "youtube"
     }
   ]
 }
