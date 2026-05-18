@@ -33,6 +33,11 @@ const Schema = z.object({
 
   DATA_DIR: z.string().default(path.resolve(process.cwd(), 'data')),
   LOGS_DIR: z.string().default(path.resolve(process.cwd(), 'logs')),
+
+  /** vmc-bot token for VMC Daily Digest (optional) */
+  VMC_BOT_TOKEN: z.string().optional(),
+  /** VMC Discord channel ID to post daily digest (optional) */
+  VMC_DIGEST_CHANNEL_ID: z.string().optional(),
 });
 
 export type Env = z.infer<typeof Schema>;
@@ -76,6 +81,8 @@ export interface AppConfig {
   wikiDir: string;
   /** Absolute path to this claw repository — derived from process.cwd() at startup */
   clawRepoPath: string;
+  /** vmc-bot token and target channel for VMC Daily Digest (optional) */
+  vmcDigest: { botToken: string; channelId: string } | null;
   gmail: GmailAccount[];
   paths: {
     dataDir: string;
@@ -145,6 +152,10 @@ export function loadConfig(): AppConfig {
     wikiChannelId: env.DISCORD_CHANNEL_WIKI,
     wikiDir: env.WIKI_DIR,
     clawRepoPath: process.cwd(),
+    vmcDigest:
+      env.VMC_BOT_TOKEN && env.VMC_DIGEST_CHANNEL_ID
+        ? { botToken: env.VMC_BOT_TOKEN, channelId: env.VMC_DIGEST_CHANNEL_ID }
+        : null,
     gmail,
     paths: {
       dataDir: env.DATA_DIR,

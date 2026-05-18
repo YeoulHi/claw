@@ -18,6 +18,7 @@ import { GitHubIssueAdapter } from './adapters/github.js';
 import { RepoSyncScheduler } from './scheduler/repo-sync.js';
 import { DreamingScheduler } from './scheduler/dreaming.js';
 import { WikiScanScheduler } from './scheduler/wiki-scan.js';
+import { DailyDigestScheduler } from './scheduler/daily-digest.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const execFileAsync = promisify(execFile);
@@ -120,6 +121,18 @@ async function main(): Promise<void> {
   const wikiScan = new WikiScanScheduler(config, () => discord.triggerWikiScan());
   wikiScan.start();
 
+  // VMC Daily Digest: posts newly ingested wiki items to VMC club Discord at noon KST
+  let dailyDigest: DailyDigestScheduler | null = null;
+  if (config.vmcDigest) {
+    dailyDigest = new DailyDigestScheduler(
+      config.wikiDir,
+      config.vmcDigest.botToken,
+      config.vmcDigest.channelId,
+    );
+    dailyDigest.start();
+    log.info({ channelId: config.vmcDigest.channelId }, 'daily-digest scheduler started');
+  }
+
   // Gmail (optional — only if configured)
   let gmail: GmailAdapter | null = null;
   const gmailReady = config.gmail.length > 0 && config.env.GMAIL_CLIENT_ID && config.env.GMAIL_CLIENT_SECRET;
@@ -166,6 +179,7 @@ async function main(): Promise<void> {
       repoSync.stop();
       dreaming.stop();
       wikiScan.stop();
+      dailyDigest?.stop();
       await discord.stop();
       if (gmail) await gmail.stop();
       github.stop();

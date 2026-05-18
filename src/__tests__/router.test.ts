@@ -57,6 +57,7 @@ function makeConfig(): AppConfig {
     wikiChannelId: undefined,
     wikiDir: path.join(os.tmpdir(), 'coding-agent-wiki'),
     clawRepoPath: '/tmp/repos/claw',
+    vmcDigest: null,
     gmail: [],
     paths: {
       dataDir,
