@@ -78,7 +78,7 @@ function buildDigestMessage(items: DigestItem[]): string {
     '',
   ];
   items.forEach((item, i) => {
-    lines.push(`${i + 1}. **${item.title}** [🔗 링크](${item.url})`);
+    lines.push(`${i + 1}. **[${item.title}](${item.url})**`);
   });
   return lines.join('\n');
 }
