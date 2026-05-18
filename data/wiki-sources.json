@@ -95,6 +95,16 @@
       "name": "Matt Pocock (YouTube)",
       "url": "https://www.youtube.com/@mattpocockuk/videos",
       "type": "youtube"
+    },
+    {
+      "name": "Theo - t3.gg (YouTube)",
+      "url": "https://www.youtube.com/@t3dotgg/videos",
+      "type": "youtube"
+    },
+    {
+      "name": "AI Engineer (YouTube)",
+      "url": "https://www.youtube.com/@aiDotEngineer/videos",
+      "type": "youtube"
     }
   ]
 }
