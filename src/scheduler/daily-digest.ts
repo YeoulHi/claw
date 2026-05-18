@@ -5,10 +5,11 @@ import { log } from '../log.js';
 const CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30분마다 체크
 const DIGEST_HOUR_KST = 12; // 정오(KST)에 실행
 const DISCORD_API = 'https://discord.com/api/v10';
+const VMC_TOPICS_BASE = 'https://vibemafiaclub.com/topics';
 
 interface DigestItem {
   title: string;
-  url: string;
+  slug: string;
   filePath: string;
 }
 
@@ -59,10 +60,11 @@ function scanUnsentItems(wikiDir: string): DigestItem[] {
       const content = fs.readFileSync(filePath, 'utf-8');
       const fm = parseFrontmatter(content);
       if (fm.digest_sent === 'true') continue;
-      const url = fm.source_url ?? fm.hada_url ?? '';
-      if (!url) continue;
-      const title = fm.title ?? filename.replace(/\.md$/, '').replace(/-/g, ' ');
-      items.push({ title, url, filePath });
+      const sourceUrl = fm.source_url ?? fm.hada_url ?? '';
+      if (!sourceUrl) continue;
+      const slug = filename.replace(/\.md$/, '');
+      const title = fm.title ?? slug.replace(/-/g, ' ');
+      items.push({ title, slug, filePath });
     } catch {
       // 파일 읽기 실패 시 건너뜀
     }
@@ -86,7 +88,7 @@ function buildDigestMessage(items: DigestItem[]): string {
     '',
   ];
   items.forEach((item, i) => {
-    lines.push(`${i + 1}. [${item.title}](${item.url})`);
+    lines.push(`${i + 1}. [${item.title}](${VMC_TOPICS_BASE}/${item.slug})`);
   });
   return lines.join('\n');
 }
