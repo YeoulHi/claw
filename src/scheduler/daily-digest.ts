@@ -80,13 +80,13 @@ function todayLabel(): string {
 
 function buildDigestMessage(items: DigestItem[]): string {
   const lines: string[] = [
-    `**VMC Daily Digest** (${todayLabel()})`,
+    `VMC Daily Digest (${todayLabel()})`,
     '',
     '> 하루 한번, VibeMafia가 큐레이팅한 AI 소식을 전송합니다.',
     '',
   ];
   items.forEach((item, i) => {
-    lines.push(`${i + 1}. **[${item.title}](${item.url})**`);
+    lines.push(`${i + 1}. [${item.title}](${item.url})`);
   });
   return lines.join('\n');
 }
