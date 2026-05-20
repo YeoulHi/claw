@@ -63,6 +63,9 @@ export function buildRepoWorkSystemAppend(args: RepoWorkPromptArgs): string {
   lines.push(
     `- 이 채널/세션은 ${args.repo.fullName} 전용. 다른 repo 작업 필요해 보이면 사용자에게 안내만.`,
   );
+  if (args.repo.description) {
+    lines.push(`- 채널 컨텍스트: ${args.repo.description}`);
+  }
   if (args.repo.fullName === 'greatSumini/life-os') {
     lines.push(`- ${LIFE_OS_HINT}`);
   }
