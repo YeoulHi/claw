@@ -79,7 +79,10 @@ export function _resetCapabilitiesForTest(): void {
 function detectCapabilities(): Promise<CliCapabilities> {
   if (capabilitiesPromise) return capabilitiesPromise;
   capabilitiesPromise = (async () => {
-    const help = await runHelp();
+    const rawHelp = await runHelp();
+    // Strip ANSI escape codes — claude CLI renders --help with color codes that
+    // break regex matching (e.g. --\x1B[7mverbose\x1B[0m instead of --verbose).
+    const help = rawHelp.replace(/\x1B\[[0-9;]*[A-Za-z]/g, '').replace(/\x1B[()][0-9A-Z]/g, '');
     const caps: CliCapabilities = {
       outputMode: help.includes('stream-json')
         ? 'stream-json'
