@@ -3,6 +3,9 @@
 claw 운영 중 발생하는 문제 — 재시작, 포트 충돌, 빌드 반영 등 — 의 정본.
 새 이슈가 검증되면 이 문서에 추가한다. (검증 전 추측 금지)
 
+> Windows PowerShell 7.6.x 환경 특유 이슈(gh not found, 2>&1 redirect 등)는
+> **[`notes/windows-ps76-issues.md`](./notes/windows-ps76-issues.md)** 에 누적 기록.
+
 ---
 
 ## 환경
