@@ -1,10 +1,14 @@
 import net from 'net';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import { spawn, type ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import type { G2W, W2G } from './types.js';
 
-export const IPC_SOCKET_PATH = '/tmp/claw-ipc.sock';
+export const IPC_SOCKET_PATH = process.platform === 'win32'
+  ? '\\\\.\\pipe\\claw-ipc'
+  : path.join(os.tmpdir(), 'claw-ipc.sock');
 
 export class GatewayIpc extends EventEmitter {
   private server: net.Server;
