@@ -1,12 +1,16 @@
 ---
 id: skill-authoring
-version: 1
+version: 2
+eval_type: output
 applies_to:
   - skill 신규 작성
   - skill 수정
 ---
 
 ## 체크리스트
+
+각 항목은 PASS / FAIL / SKIP 중 하나로 판정한다.
+실행 결과는 task.json의 `results` 배열에 기록한다.
 
 - [ ] SKILL.md frontmatter에 `name`, `description`, `triggers` 모두 존재
 - [ ] `triggers` 3개 이상, 실제 사용자 표현 반영
