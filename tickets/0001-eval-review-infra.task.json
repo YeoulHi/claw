@@ -1,0 +1,9 @@
+{
+  "id": "0001-eval-review-infra",
+  "ticket": "0001",
+  "eval": null,
+  "description": "eval/review 인프라 폴더 구조 구축 + 첫 번째 eval 파일 작성",
+  "status": "completed",
+  "notes": "설계 결정 전체는 tickets/0001-eval-review-infra.md에 기록됨. 이 task.json은 실행 단위 메타만 담음.",
+  "prompt": "tickets/0001-eval-review-infra.md를 참고해 evals/ 폴더와 첫 번째 eval 파일을 생성하라. eval 포맷은 evals/skill-authoring.eval.md를 템플릿으로 사용."
+}
