@@ -96,10 +96,6 @@ PowerShell(SYSTEM 계정 환경)이 스크립트 파일을 시스템 기본 인�
 **해결책:** `.ps1` 스크립트 파일에 한글 리터럴을 사용하지 않는다.
 
 1. 한글 문자열이 필요하면 ASCII 앵커 주석으로 대체
-   ```powershell
-   # 한글 섹션 헤더 대신 HTML 주석 앵커 사용
-   $anchor = "<!-- ps76-pending-anchor -->"
-   ```
 2. 파일 내 한글은 변수로 받거나(외부 파일에서 읽기) 바이트 배열로 구성
 3. 스크립트가 읽는 대상 파일(`.md` 등)은 한글 포함 가능 — 스크립트 소스코드만 ASCII-safe 유지
 
@@ -107,8 +103,8 @@ PowerShell(SYSTEM 계정 환경)이 스크립트 파일을 시스템 기본 인�
 
 ---
 
-<!-- ps76-pending-anchor -->
 ## 추가 예정 (미검증)
 
+<!-- ps76-pending-anchor -->
 - Windows Defender / 바이러스 백신이 Node.js 프로세스를 일시 차단하는 케이스
 - NSSM 서비스 재시작 시 포트 CLOSE_WAIT 상태 잔존

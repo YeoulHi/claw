@@ -3,7 +3,7 @@ id: "0007"
 title: PostToolUse hook 기반 PowerShell 오류 자동 기록
 type: one-off
 cluster: infra
-status: active
+status: completed
 eval: ~
 created: 2026-05-21
 ---
@@ -52,6 +52,19 @@ PowerShell 도구 실행 중 오류가 감지되면 Claude hooks가 자동으로
 - `Get-Item "C:\nonexistent-path"` → notes에 항목 append 확인
 - `git push origin main` 정상 실행 → 노이즈 없음 확인 (NativeCommandError 오탐 방지)
 - append 위치가 `## 추가 예정` 섹션인지 확인
+
+## 검증 결과 (2사이클)
+
+Cycle 1 → Cycle 2 검토 완료. **APPROVED.**
+
+수정 이력:
+- $command null-safe 처리 추가
+- stderr_first 버그 수정 (`@()` 강제 배열화)
+- `-replace` → `LastIndexOf` 기반 삽입으로 코드블록 내 anchor 오치환 방지
+- CLAUDE_PROJECT_DIR 없을 때 PSScriptRoot 기반 fallback 추가
+- anchor 위치를 `## 추가 예정` 헤더 아래로 이동
+
+미해결 MINOR: `settings.json`에 `async` 필드 없음 — timeout=5000 상한으로 실용적 문제 없음.
 
 ## 선행 조건
 

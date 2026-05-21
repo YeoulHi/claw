@@ -1,6 +1,7 @@
 # PostToolUse hook: PowerShell error detector -> append to notes/windows-ps76-issues.md
 # Input: JSON via stdin (hook_event_name, tool_name, tool_input, tool_result)
 # Anchor: <!-- ps76-pending-anchor --> marks the insert point in the notes file
+# Note: uses LastIndexOf to avoid matching anchor strings inside code blocks
 
 param()
 
@@ -33,23 +34,33 @@ $is_error = ($event -eq "PostToolUseFailure") -or
             $is_real_error_stderr
 if (-not $is_error) { exit 0 }
 
-# Build entry
+# Build entry — null-safe command handling
 $date        = Get-Date -Format "yyyy-MM-dd"
-$cmd_preview = if ($command.Length -gt 60) { $command.Substring(0, 60) + "..." } else { $command }
-$stderr_lines = ($stderr -split "`n") | Where-Object { $_.Trim() }
-$stderr_first = if ($stderr_lines) { $stderr_lines[0] } else { "(no stderr)" }
+$safe_cmd    = if (-not $command) { "(null)" } else { $command }
+$cmd_preview = if ($safe_cmd.Length -gt 60) { $safe_cmd.Substring(0, 60) + "..." } else { $safe_cmd }
+$stderr_lines = @(($stderr -split "`n") | Where-Object { $_.Trim() })
+$stderr_first = if ($stderr_lines.Count -gt 0) { $stderr_lines[0] } else { "(no stderr)" }
 $exit_str    = if ($null -ne $exit_code) { $exit_code.ToString() } else { "N/A" }
 
-$entry = "### [$date] PS auto-logged: $cmd_preview`n`n**symptom:** ``$command`` -> ``$stderr_first```n**cause:** (auto-logged - unverified)`n**fix:** (unverified - manual investigation needed)`n**ref:** auto-logged by PostToolUse hook (exit_code=$exit_str)"
+$entry = "`n### [$date] PS auto-logged: $cmd_preview`n`n**symptom:** ``$safe_cmd`` -> ``$stderr_first```n**cause:** (auto-logged - unverified)`n**fix:** (unverified - manual investigation needed)`n**ref:** auto-logged by PostToolUse hook (exit_code=$exit_str)"
 
-# Find notes file and insert before anchor
-$notes_path = Join-Path $env:CLAUDE_PROJECT_DIR "notes\windows-ps76-issues.md"
+# Resolve project dir: env var with fallback to script location (.claude/hooks/ -> project root)
+$project_dir = if ($env:CLAUDE_PROJECT_DIR) {
+    $env:CLAUDE_PROJECT_DIR
+} else {
+    Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+}
+
+$notes_path = Join-Path $project_dir "notes\windows-ps76-issues.md"
 if (-not (Test-Path $notes_path)) { exit 0 }
 
 $content = [System.IO.File]::ReadAllText($notes_path, [System.Text.Encoding]::UTF8)
 $anchor  = "<!-- ps76-pending-anchor -->"
 
-if ($content -notmatch [regex]::Escape($anchor)) { exit 0 }
+# LastIndexOf: avoids matching anchor strings inside code block examples
+$anchor_idx = $content.LastIndexOf($anchor)
+if ($anchor_idx -lt 0) { exit 0 }
 
-$new_content = $content -replace [regex]::Escape($anchor), "$entry`n`n$anchor"
+$insert_pos  = $anchor_idx + $anchor.Length
+$new_content = $content.Substring(0, $insert_pos) + $entry + $content.Substring($insert_pos)
 [System.IO.File]::WriteAllText($notes_path, $new_content, [System.Text.Encoding]::UTF8)
