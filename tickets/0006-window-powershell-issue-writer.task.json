@@ -1,0 +1,19 @@
+{
+  "id": "0006-window-powershell-issue-writer",
+  "ticket": "0006",
+  "eval": "skill-authoring",
+  "description": "window-powershell-issue-writer SKILL.md 작성 + eval 검토",
+  "status": "active",
+  "steps": [
+    {
+      "order": 1,
+      "type": "llm",
+      "prompt": "skills/window-powershell-issue-writer/SKILL.md를 작성하라. 트리거: 명시적 로그 요청. 본문: notes/windows-ps76-issues.md append 지침."
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "evals/skill-authoring.eval.md 체크리스트로 완성된 SKILL.md를 검토하라. APPROVED이면 완료."
+    }
+  ]
+}
