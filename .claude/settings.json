@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -File ${CLAUDE_PROJECT_DIR}\\.claude\\hooks\\ps-error-logger.ps1",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -File ${CLAUDE_PROJECT_DIR}\\.claude\\hooks\\ps-error-logger.ps1",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

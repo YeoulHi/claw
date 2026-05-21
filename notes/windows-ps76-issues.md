@@ -1,4 +1,4 @@
-# Windows PowerShell 7.6.x 이슈 로그
+﻿# Windows PowerShell 7.6.x 이슈 로그
 
 > claw가 Windows NSSM 서비스(NT AUTHORITY\SYSTEM)로 실행될 때 발생하는
 > PowerShell/Windows 환경 특유의 이슈를 누적 기록한다.
@@ -79,6 +79,7 @@ git push origin main 2>&1  # NativeCommandError 유발
 
 ---
 
+<!-- ps76-pending-anchor -->
 ## 추가 예정 (미검증)
 
 - Windows Defender / 바이러스 백신이 Node.js 프로세스를 일시 차단하는 케이스

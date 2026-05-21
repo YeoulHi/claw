@@ -1,0 +1,24 @@
+{
+  "id": "0007-ps-error-hook-logger",
+  "ticket": "0007",
+  "eval": null,
+  "description": "PostToolUse hook으로 PowerShell 오류 자동 기록 시스템 구축",
+  "status": "active",
+  "steps": [
+    {
+      "order": 1,
+      "type": "script",
+      "run": ".claude/hooks/ps-error-logger.ps1 (작성 후 단독 실행 검증)"
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "샘플 JSON stdin으로 ps-error-logger.ps1 단독 실행 검증. exit_code=1 케이스와 exit_code=0+NativeCommandError 케이스 모두 테스트."
+    },
+    {
+      "order": 3,
+      "type": "llm",
+      "prompt": ".claude/settings.json에 PostToolUse + PostToolUseFailure hook 등록. matcher=PowerShell, async=true."
+    }
+  ]
+}
