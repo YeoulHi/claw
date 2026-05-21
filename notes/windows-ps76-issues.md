@@ -79,6 +79,34 @@ git push origin main 2>&1  # NativeCommandError 유발
 
 ---
 
+### [2026-05-21] PowerShell 스크립트 파일 내 한글 리터럴 인코딩 파싱 실패
+
+**증상:** `.ps1` 스크립트 파일에 한글 문자열 리터럴 포함 시 PowerShell이 파싱 단계에서 오류 발생
+
+```
+Unexpected token 'ê°€' in expression or statement.
+The string is missing the terminator: ".
+```
+
+UTF-8로 저장된 파일의 한글이 `ì¶"ê°€ ì˜ˆì •`처럼 Windows-1252로 깨져 읽힘.
+
+**원인:** Claude Code의 Write 도구가 BOM 없는 UTF-8로 파일을 저장함.
+PowerShell(SYSTEM 계정 환경)이 스크립트 파일을 시스템 기본 인코딩(Windows-1252)으로 파싱해 한글 처리 실패.
+
+**해결책:** `.ps1` 스크립트 파일에 한글 리터럴을 사용하지 않는다.
+
+1. 한글 문자열이 필요하면 ASCII 앵커 주석으로 대체
+   ```powershell
+   # 한글 섹션 헤더 대신 HTML 주석 앵커 사용
+   $anchor = "<!-- ps76-pending-anchor -->"
+   ```
+2. 파일 내 한글은 변수로 받거나(외부 파일에서 읽기) 바이트 배열로 구성
+3. 스크립트가 읽는 대상 파일(`.md` 등)은 한글 포함 가능 — 스크립트 소스코드만 ASCII-safe 유지
+
+**참고:** commit `34e50c7` — ps-error-logger.ps1 최초 버전이 한글 리터럴로 파싱 실패, ASCII anchor 방식으로 재작성
+
+---
+
 <!-- ps76-pending-anchor -->
 ## 추가 예정 (미검증)
 
