@@ -39,3 +39,5 @@ SKIP 사유는 명시적으로 기록하라.
 
 **참조:**
 - `claw/CLAUDE.md` — "Skill 작성 검증 원칙" 섹션
+- `wiki/0001-langchain-trajectory-vs-output-eval.md` — eval_type 구분 기준
+- `wiki/0002-anthropic-harness-long-running-agents.md` — results[] 필드, 기준 누적 원칙
