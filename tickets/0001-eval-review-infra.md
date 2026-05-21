@@ -1,6 +1,8 @@
 ---
 id: "0001"
 title: eval/review 인프라 구축
+type: one-off
+cluster: infra
 status: completed
 eval: ~
 created: 2026-05-21

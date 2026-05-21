@@ -1,0 +1,19 @@
+{
+  "id": "0003-result-yaml-format",
+  "ticket": "0003",
+  "eval": null,
+  "description": "result.yaml 포맷 확정, 0001 소급 작성, SDK 집계 스크립트 초안",
+  "status": "backlog",
+  "steps": [
+    {
+      "order": 1,
+      "type": "llm",
+      "prompt": "tickets/0001-eval-review-infra.md의 eval 실행 결과를 기반으로 tickets/0001-eval-review-infra.result.yaml을 작성하라. 포맷은 tickets/0003-result-yaml-format.md의 표준 포맷 사용."
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "scripts/aggregate-results.ts를 생성하라. tickets/*.result.yaml을 glob해 verdict별 카운트를 출력하는 스크립트. TypeScript + Node.js 환경 기준."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "0005-eval-library-expansion",
+  "ticket": "0005",
+  "eval": null,
+  "description": "eval 라이브러리에 ticket-review, task-result eval 추가",
+  "status": "backlog",
+  "steps": [
+    {
+      "order": 1,
+      "type": "llm",
+      "prompt": "evals/skill-authoring.eval.md를 템플릿으로 evals/ticket-review.eval.md를 작성하라. 체크 항목은 tickets/0005-eval-library-expansion.md 참조."
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "evals/task-result.eval.md를 작성하라. task.json steps 실행 결과 품질 검토 기준. 체크 항목은 tickets/0005-eval-library-expansion.md 참조."
+    }
+  ]
+}

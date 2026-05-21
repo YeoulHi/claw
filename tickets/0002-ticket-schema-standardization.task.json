@@ -1,0 +1,19 @@
+{
+  "id": "0002-ticket-schema-standardization",
+  "ticket": "0002",
+  "eval": null,
+  "description": "ticket.md 스키마에 type/cluster 추가, task.json steps 포맷 확정",
+  "status": "backlog",
+  "steps": [
+    {
+      "order": 1,
+      "type": "llm",
+      "prompt": "tickets/0001-eval-review-infra.md frontmatter에 type: one-off, cluster: infra 필드를 추가하라."
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "tickets/0002-ticket-schema-standardization.md의 '확정 스키마' 섹션을 CLAUDE.md 또는 별도 TICKET-SCHEMA.md에 문서화하라."
+    }
+  ]
+}

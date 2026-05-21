@@ -1,0 +1,24 @@
+{
+  "id": "0004-run-ticket-skill",
+  "ticket": "0004",
+  "eval": "skill-authoring",
+  "description": "run-ticket skill PoC → 검증 완료 후 SKILL.md 작성",
+  "status": "backlog",
+  "steps": [
+    {
+      "order": 1,
+      "type": "llm",
+      "prompt": "tickets/0004-run-ticket-skill.md의 '실행 계약'과 '분기 로직'을 기반으로 run-ticket skill의 핵심 동작을 PoC 코드(또는 의사코드)로 작성하라. Claude SDK 사용 가정."
+    },
+    {
+      "order": 2,
+      "type": "llm",
+      "prompt": "PoC 검증 완료 후 skills/run-ticket/SKILL.md를 작성하라. CLAUDE.md의 'Skill 작성 검증 원칙' 준수 — 실행 검증 전 작성 금지."
+    },
+    {
+      "order": 3,
+      "type": "llm",
+      "prompt": "evals/skill-authoring.eval.md 체크리스트로 완성된 SKILL.md를 검토하라. APPROVED이면 result.yaml 작성."
+    }
+  ]
+}
