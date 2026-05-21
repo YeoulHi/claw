@@ -1,6 +1,6 @@
 ---
 id: "0008"
-title: "Karpathy llm-wiki 패턴 접목 — wiki 시스템 강화"
+title: "wiki 공간 재정의 — 사람 vs agent 역할 분리"
 type: one-off
 cluster: wiki
 status: open
@@ -8,48 +8,48 @@ eval: ~
 created: 2026-05-21
 ---
 
-## 배경
+## 핵심 관점
 
-Karpathy의 llm-wiki 패턴 조사 결과 (→ wiki/0004-karpathy-llm-wiki-pattern.md):
-- RAG 대신 "LLM이 wiki를 점진적 컴파일·유지"하는 접근
-- raw → wiki → CLAUDE.md 3계층 + Ingest/Query/Lint 3작업
-- frontmatter에 type, related, confidence 필드로 지식 그래프 형성
+Karpathy의 llm-wiki 패턴을 검토하면서 도출된 설계 원칙:
 
-claw의 현재 wiki는 flat + 기본 frontmatter. 이번 티켓으로 구조적 강화.
+- **wiki = 지식의 평준화** — 중립적 사실, 외부 자료의 컴파일. agent가 작성·관리.
+- **비교 사유 공간 = 지식의 비교와 누적** — 사람의 비교 의지와 의도가 전제. agent가 자동으로 채울 수 없음.
 
-## 목표
+Karpathy는 이 둘을 wiki 하나에 합쳤지만(`comparisons/` 포함), 책임 분리 관점에서는 공간을 나눠야 한다.
 
-Karpathy 패턴에서 선별한 아이디어를 claw wiki 시스템에 단계적으로 접목.
+## 설계 방향
+
+| 공간 | 작성 주체 | 성격 | 현재 상태 |
+|------|-----------|------|-----------|
+| `wiki/` | **agent** | 평준화된 사실, 외부 자료 요약, 중립적 참조 | 존재함 |
+| `[새 공간 — 이름 TBD]` | **사람** | 비교에서 나온 생각, 주관적 판단, 누적되는 사유 | 없음 |
+
+새 공간 이름 후보: `thoughts/`, `notes/`, `memo/` — 구현 시 결정.
 
 ## 작업 항목
 
-### Phase 1 — Frontmatter 강화 (낮은 비용, 높은 즉시 효과)
+### Phase 0 — wiki 역할 재정의 (문서)
 
-- [ ] 기존 wiki 아티클 4개에 `type`, `related`, `confidence` 필드 추가
-- [ ] wiki 아티클 포맷 기준을 CLAUDE.md 또는 wiki/SCHEMA.md에 문서화
-  - `type`: concept | entity | source-summary | comparison
+- [ ] `wiki/` 폴더의 역할을 "agent 작성 영역, 평준화 사실" 로 명시
+  - CLAUDE.md 또는 wiki/SCHEMA.md에 "사람이 직접 편집하지 않는 영역" 명시
+- [ ] 새 공간(`thoughts/` 등) 이름·위치·포맷 결정
+  - 포맷: 날짜 + 주제 + 비교 대상 + 나의 판단 (frontmatter TBD)
+
+### Phase 1 — wiki frontmatter 강화 (agent 영역 정비)
+
+- [ ] 기존 wiki 아티클에 `type`, `related`, `confidence` 필드 추가
+  - `type`: concept | entity | source-summary (comparison은 wiki 밖으로)
   - `related`: 연관 wiki 아티클 id 리스트
   - `confidence`: high | medium | low
+- [ ] `wiki/index.md` 생성 — agent가 관리하는 카탈로그
 
-### Phase 2 — 카탈로그 & 로그 인프라
+### Phase 2 — 새 공간 구축 (사람 영역)
 
-- [ ] `wiki/index.md` 생성 — 모든 아티클 카탈로그 (id, title, type, tags 한 줄 요약)
-- [ ] `wiki/log.md` 생성 — append-only 인제스트 로그 (`## [날짜] ingest | 제목` 포맷)
-
-### Phase 3 — Skill 추가
-
-- [ ] Repo skill `wiki-article-writer` (`.claude/skills/`) 작성
-  - Ingest 워크플로: 외부 자료 → frontmatter 채우기 → cross-link 업데이트 → log.md 기록
-  - 현재 wiki 파일명 규칙(NNNN-*.md), frontmatter 스키마 주입
-- [ ] Claw skill `wiki-lint` (`claw/skills/`) 검토
-  - 고아 페이지 (applied_in 비어있고 저장 후 2주 이상 경과)
-  - 미연결 관련 개념 (같은 태그인데 related에 없는 아티클)
-
-## 우선순위
-
-Phase 1 → Phase 2 → Phase 3 순. Phase 1만 해도 즉시 가치.
+- [ ] 이름 확정 후 폴더 생성
+- [ ] frontmatter 스키마 설계: 비교 대상, 날짜, 결론, 참조 wiki 아티클
+- [ ] Repo skill `thoughts-writer` (또는 확정된 이름) 작성 — 사람이 비교 의도를 표현하면 포맷 잡아주는 보조 역할
 
 ## 참고
 
-- wiki/0004-karpathy-llm-wiki-pattern.md — 원본 아이디어 및 적용 지도
+- wiki/0004-karpathy-llm-wiki-pattern.md — Karpathy 패턴 분석 + claw 적용 지도
 - Karpathy Gist: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
