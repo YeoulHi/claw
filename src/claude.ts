@@ -69,6 +69,14 @@ function getClaudeBin(): string {
   return process.env['CLAUDE_BIN'] ?? 'claude';
 }
 
+/**
+ * Windows 의 Node spawn 은 보안 패치(CVE-2024-27980) 이후 `.cmd`/`.bat` 을 직접 실행하지 못한다.
+ * binary 가 .cmd/.bat 일 때만 `shell: true` 를 활성화한다.
+ */
+function needsShell(bin: string): boolean {
+  return process.platform === 'win32' && /\.(cmd|bat)$/i.test(bin);
+}
+
 let capabilitiesPromise: Promise<CliCapabilities> | null = null;
 
 /** Reset cached CLI capabilities — test use only. */
@@ -110,9 +118,11 @@ function detectCapabilities(): Promise<CliCapabilities> {
 
 function runHelp(): Promise<string> {
   return new Promise((resolve, reject) => {
-    const proc = spawn(getClaudeBin(), ['--help'], {
+    const bin = getClaudeBin();
+    const proc = spawn(bin, ['--help'], {
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: needsShell(bin),
     });
     let out = '';
     let err = '';
@@ -356,10 +366,12 @@ export function runClaude(opts: ClaudeRunOptions): Promise<ClaudeRunResult> {
     );
 
     return await new Promise<ClaudeRunResult>((resolve, reject) => {
-      const proc = spawn(getClaudeBin(), args, {
+      const bin = getClaudeBin();
+      const proc = spawn(bin, args, {
         cwd: opts.cwd,
         env: process.env,
         stdio: ['pipe', 'pipe', 'pipe'],
+        shell: needsShell(bin),
       });
 
       const acc = newAccumulator();

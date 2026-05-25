@@ -13,7 +13,12 @@ import { _resetCapabilitiesForTest } from '../claude.js';
 // ---------------------------------------------------------------------------
 
 const MOCK_CLAUDE_PATH = fileURLToPath(
-  new URL('./mocks/claude-mock.mjs', import.meta.url),
+  new URL(
+    process.platform === 'win32'
+      ? './mocks/claude-mock.cmd'
+      : './mocks/claude-mock.mjs',
+    import.meta.url,
+  ),
 );
 const ORIGINAL_CLAUDE_BIN = process.env.CLAUDE_BIN;
 
