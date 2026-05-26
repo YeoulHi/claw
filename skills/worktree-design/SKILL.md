@@ -33,6 +33,8 @@ triggers:
 3. **advisor 결과 전달** — advisor의 리뷰 결과를 사용자에게 전달
 4. **방향 확정 후 구현 착수**
 
+worktree 설계가 레포 파일 읽기·수정·생성, git, 스키마, 코드 구현으로 이어지는 경우 claw가 직접 처리하지 않고 advisor가 사용자 로컬 Windows + pwsh 7.6.x 환경에서 수행한다.
+
 ## Advisor 리뷰 요청 시 전달할 체크리스트
 
 advisor에게 위임할 때 다음 질문들을 포함해 검토를 요청한다:
@@ -66,3 +68,35 @@ advisor에게 위임할 때 다음 질문들을 포함해 검토를 요청한다
 - 단일 worktree 환경 (병렬 작업 없음)이 명확한 경우
 - 파일이 read-only이거나 append-only (충돌 없음)인 경우
 - 사용자가 리스크를 인지하고 명시적으로 수락한 경우
+
+---
+
+# 실행 및 검증 계약
+
+## Windows/pwsh 기준
+
+advisor에게 전달하는 명령은 Windows 11 + PowerShell 7.6.x 기준으로 작성한다.
+
+- 환경변수는 `$env:VAR`
+- 줄 연속은 백틱(`)
+- 오류 리다이렉트는 `2>$null`
+- 명령 체이닝은 `&&` / `||`
+- 홈 경로는 `$env:USERPROFILE` 또는 절대경로 `C:\Users\yeoul\...`
+- bash 어휘(`$VAR`, `/dev/null`, `~/`, 백슬래시 줄 연속) 금지
+
+## 완료 조건
+
+- 설계 변경 후에는 실행 또는 dry-run 검증을 수행한다.
+- 반복 가능한 worktree/병렬 작업 패턴을 새로 만들었으면 관련 skill에 패턴 추가를 먼저 제안한다.
+- 완료 보고는 **구현 내용 → 검증 결과 → 다음 단계** 구조로 간결하게 작성한다.
+- 파일 또는 URL 산출물이 있으면 Discord 응답 마지막에 `__CLAW_ARTIFACT__ {"kind":"file","path":"...","caption":"..."}` 또는 `__CLAW_ARTIFACT__ {"kind":"url","url":"...","caption":"..."}`를 붙인다.
+- 작업이 repo 변경을 만들었다면 의미 단위 commit & push를 수행한다.
+
+## Git push 절차
+
+1. 첫 push 전 `gh auth setup-git` 실행
+2. `git remote get-url origin`으로 remote 확인
+3. SSH URL이면 `git remote set-url origin https://github.com/<owner>/<repo>`로 HTTPS 고정
+4. 강제 옵션 없이 push
+
+실패 시 `-f`, `--no-verify`, `--no-gpg-sign`로 강행하지 말고 실패 내용을 보고한다.
