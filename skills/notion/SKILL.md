@@ -17,21 +17,30 @@ triggers:
 
 # Notion CLI (ntn) 사용 지침
 
+## 환경 전제 (Windows 11 / pwsh 7.6.x)
+
+claw 서비스는 Windows + NSSM `LocalSystem` 환경에서 codex(GPT-5.5) 엔진을 통해 동작한다. `ntn` CLI는 PATH 또는 절대경로로 호출하며, macOS `~/.local/bin/` 가정은 사용하지 않는다.
+
 ## 바이너리 경로
 
-```
-~/.local/bin/ntn
+PATH에 등록된 경우 `ntn`을 그대로 호출. 등록되지 않은 경우 다음 순서로 탐색:
+
+```powershell
+Get-Command ntn -ErrorAction SilentlyContinue
+# 후보: scoop shims ("$env:USERPROFILE\scoop\shims\ntn.exe"),
+#       npm global ("$env:APPDATA\npm\ntn.cmd"),
+#       사용자 직접 설치 경로 ("$env:USERPROFILE\.local\bin\ntn.exe")
 ```
 
-PATH에 없을 경우 항상 전체 경로 `~/.local/bin/ntn`으로 호출한다.
+설치되지 않은 경우 설치부터 안내한다 (`scoop install ntn` 또는 npm 등 — 실제 배포 채널 확인 후). 임의 경로 추정 금지.
 
 ## 인증
 
-`NOTION_API_TOKEN`이 `.env`에 설정되어 있으므로 `ntn login` 없이 바로 사용 가능.
-모든 ntn 명령 실행 시 환경변수가 자동 로드된 상태여야 한다 (claw 프로세스는 `.env`를 로드함).
+`NOTION_API_TOKEN`은 claw 프로세스 환경변수(NSSM `AppEnvironmentExtra` 또는 `.env`)에 설정되어 있으므로 `ntn login` 없이 바로 사용 가능.
+모든 ntn 명령 실행 시 환경변수가 로드된 상태여야 한다 — pwsh에서는 `$env:NOTION_API_TOKEN`으로 확인.
 
-- `ntn login` — 브라우저 인증 (PAT 방식, 워크스페이스 정책에 따라 차단될 수 있음)
-- 환경변수 `NOTION_API_TOKEN` — integration token 방식 (현재 사용 중)
+- `ntn login` — 브라우저 인증 (PAT 방식, 워크스페이스 정책에 따라 차단될 수 있음. NSSM LocalSystem 환경에서는 사용 불가)
+- 환경변수 `NOTION_API_TOKEN` — integration token 방식 (현재 사용 중. NSSM 갱신 후 `Restart-Service claw` 필요)
 
 ## 주요 명령어
 

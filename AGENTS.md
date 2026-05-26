@@ -1,10 +1,39 @@
-# claw — Codex 작업 지침
+# claw — codex(GPT-5.5) 작업 지침
 
 > 운영 문제(재시작 실패, 포트 충돌, 빌드 반영 등)는 **[`OPS.md`](./OPS.md)** 정본 참조.
+> 환경·어휘 매핑 SSOT는 **[`docs/gpt55-windows-mapping.md`](./docs/gpt55-windows-mapping.md)**. 이 파일은 그 SSOT를 작업 지침으로 풀어쓴 것.
+
+---
+
+## 실행 환경 사실 (고정)
+
+| 항목 | 값 |
+|---|---|
+| Engine | OpenAI codex (CLI) |
+| Model | `gpt-5.5` (`C:\Users\yeoul\.codex\config.toml`의 `model`) |
+| OS | Windows 11 Home (DUWLS) |
+| Shell | PowerShell 7.6.x (pwsh) — `&&` / `||` 사용 가능 |
+| Process supervisor | NSSM 서비스 `claw` (StartName `LocalSystem`, 부팅 시 auto-start) |
+| Sandbox | `--sandbox danger-full-access` (`approval_policy = "never"`) |
+| codex auth | `C:\Users\yeoul\.codex\auth.json` (ChatGPT 구독 OAuth) — `CODEX_HOME=C:\Users\yeoul\.codex` 환경변수 필수 |
+| codex 바이너리 | `CODEX_BIN=C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin\<hash>\codex.exe` (npm wrapper `codex.ps1`은 spawn 불가) |
+| Home dir | `$env:USERPROFILE` 또는 절대경로 `C:\Users\yeoul\...` (절대 `~/` 쓰지 말 것) |
+| Git remote | HTTPS 고정 (`https://github.com/<owner>/<repo>`) — LocalSystem 환경에서 SSH push 불가 |
+| GH token | `$env:GH_TOKEN` (PowerShell profile에서 `gh auth token`으로 자동 로드) |
+
+**셸 어휘 규칙 (pwsh 7.6.x):**
+- 환경변수: `$env:VAR` (bash `$VAR` 금지)
+- 줄 연속: 백틱 `` ` `` (bash `\` 금지)
+- null 리다이렉트: `2>$null` (bash `2>/dev/null` 금지)
+- 명령 체인: `&&` / `||` 사용 가능 (pwsh 7+)
+- 프로세스 종료: `Stop-Process -Id <PID> -Force` 또는 `taskkill /PID <PID> /F` (bash `kill -9` 금지)
+- 포트 확인: `Get-NetTCPConnection -LocalPort 3200` 또는 `netstat -ano | findstr ":3200"` (bash `lsof` 금지)
+
+---
 
 ## 재시작 마커 (`__CLAW_RESTART__`) 사용 규칙
 
-claw가 응답 본문에서 마커를 검출하면 제거 후 프로세스를 재시작한다 (Windows에서는 `process.exit(0)` → 외부 재기동 경로 / Discord 재시작 흐름 사용. 자세한 절차는 `OPS.md`).
+claw가 응답 본문에서 마커를 검출하면 제거 후 `process.exit(0)`로 종료한다. NSSM이 자동으로 재기동한다.
 마커가 제거되면 남은 텍스트가 Discord에 전송되므로, **마커만 단독으로 출력하면 빈 메시지가 전달된다.**
 
 **규칙: 마커 앞에 반드시 사람이 읽을 수 있는 텍스트를 한 줄 이상 포함할 것.**
@@ -18,6 +47,31 @@ __CLAW_RESTART__
 # 잘못된 예 (Discord에 빈 메시지 전송됨)
 __CLAW_RESTART__
 ```
+
+**재시작 경로 (NSSM 정본):**
+- 관리자 PS에서 직접: `Restart-Service claw`
+- Discord 자연어 ("재시작해줘") → 마커 응답 → `process.exit(0)` → NSSM auto-restart
+- macOS `launchctl`은 사용하지 않는다. 흔적 발견 시 즉시 NSSM 명령으로 교체.
+
+---
+
+## codex 고유 기능 활용
+
+`C:\Users\yeoul\.codex\config.toml`에 활성화된 기능을 작업 시 의식적으로 활용한다.
+
+| 기능 | 설정 키 | 활용 가이드 |
+|---|---|---|
+| Web 검색 | `web_search = "cached"` | codex가 응답 중 자체 웹 검색 수행. 별도 WebFetch/WebSearch 호출 불필요. 캐시 우선이므로 **최신성이 중요할 때만** "최신 정보로 다시 검색" 명시. |
+| 멀티 에이전트 | `multi_agent = true` | codex가 내부 sub-agent 분기 가능. "이 작업 병렬로 처리해", "두 파일 동시에 분석해" 류 발화에 활용. |
+| Node REPL MCP | `mcp_servers.node_repl` | JS/Node 코드 실행 가능. 계산·JSON 파싱·간단 스크립팅에 사용. shell 호출 대신 우선 시도. |
+| Documents plugin | `plugins."documents@openai-primary-runtime"` | PDF 생성·읽기. 보고서·문서 산출물 요청 시 활용. |
+| Spreadsheets plugin | `plugins."spreadsheets@..."` | Excel 생성·읽기. 표 데이터·시뮬레이션 산출물에 활용. |
+| Presentations plugin | `plugins."presentations@..."` | PPT 생성. 발표 자료 요청 시 활용. |
+| Shell snapshot | `features.shell_snapshot = true` | 이전 shell 상태(env, cwd) 일부 복원. 세션 연속성. |
+| Goals | `features.goals = true` | 멀티스텝 작업에서 내부 목표 트래킹. |
+
+**reasoning summary와 align/thinking 블록의 관계:**
+codex의 `model_reasoning_summary = "auto"`는 모델이 자체 생성하는 추출본으로 응답 본문에 별도 노출되지 않는다 (`codex.ts` `extractItemText`가 text 채널만 추출). claw가 요구하는 `## 🤔 align` / `## 💬 thinking`은 사용자 향한 사고 노출이므로 prompt.ts에서 명시 지시하면 그대로 동작하며, codex 내부 reasoning과 충돌하지 않는다.
 
 ---
 
@@ -52,10 +106,10 @@ triggers:
 
 ### Claw skill vs Repo skill 구분 원칙
 
-| 기준 | Claw skill | Repo (Codex) skill |
+| 기준 | Claw skill | Repo (codex) skill |
 |------|-----------|--------------------------|
-| 저장 위치 | `claw/skills/` | `{repo}/.Codex/skills/` |
-| 주입 주체 | claw 오케스트레이터 (세션 시작 전) | Codex 에이전트 (세션 도중) |
+| 저장 위치 | `claw/skills/` | `{repo}/.codex/skills/` 또는 `{repo}/.claude/skills/` (codex가 cwd에서 자동 검색) |
+| 주입 주체 | claw 오케스트레이터 (세션 시작 전) | codex 에이전트 (세션 도중) |
 | 대상 | 인터랙션 패턴 / 커뮤니케이션 방식 | 코드베이스 내 구현 패턴 |
 | 핵심 질문 | "레포가 달라져도 이 지식이 필요한가?" | "이 레포 코드를 알아야 쓸 수 있는가?" |
 
@@ -96,11 +150,20 @@ triggers:
 **스크립트·외부 라이브러리가 포함된 skill은 실행 검증 전 SKILL.md 초안 작성 금지.**
 
 순서:
-1. 실제 환경에서 설치·실행 테스트
-2. 정확한 명령어·경로 확인
+1. 실제 환경(Windows + pwsh 7.6.x)에서 설치·실행 테스트
+2. 정확한 명령어·경로 확인 (절대경로 `C:\...` 기준)
 3. 확인된 내용으로 SKILL.md 작성
 
 이유: 검증 전 선작성 시 설치 명령어·경로가 틀려 SKILL.md를 이중 수정하게 됨.
+
+---
+
+## Git / GitHub — Windows LocalSystem 환경
+
+- **HTTPS 고정**: `git remote set-url origin https://github.com/<owner>/<repo>` (SSH push 불가)
+- **인증 setup (idempotent)**: `gh auth setup-git` — 여러 번 실행해도 안전. `$env:GH_TOKEN` 자동 인식.
+- **push 스크립트**: `scripts/git-push.ps1 -Rebase` (pull --rebase → push)
+- **금지**: `-f` 강제 push, `--no-verify`, `--no-gpg-sign` (사용자 명시 요청 시에만)
 
 ---
 

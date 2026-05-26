@@ -67,22 +67,28 @@ function buildPrompt(prompt: string, systemAppend: string | undefined): string {
 }
 
 function buildArgs(opts: CodexRunOptions): string[] {
-  // 'exec' subcommand runs codex non-interactively.
-  // '--json' emits JSONL to stdout.
-  // '--danger-full-access' bypasses sandbox (equivalent to claude's --dangerously-skip-permissions).
-  // '-' tells codex to read the prompt from stdin.
-  const args: string[] = ['exec', '--json', '--sandbox', 'danger-full-access'];
+  // SSOT: claw/docs/codex-cli-spec.md
+  // - codex exec [OPTIONS] [PROMPT]              새 세션
+  // - codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]   세션 재개
+  // 두 명령은 옵션 집합이 다름. resume은 --sandbox/-s, --cd/-C 등 받지 않음 (있으면 exit 2).
+  // '-' 는 PROMPT를 stdin에서 읽으라는 표시.
+  const args: string[] = ['exec'];
   if (opts.resume) {
-    args.push('--session-id', opts.resume);
-  }
-  if (opts.model) {
-    args.push('--model', opts.model);
+    // resume: SESSION_ID는 위치 인자. --sandbox 추가 금지.
+    args.push('resume', opts.resume, '--json');
+    if (opts.model) args.push('--model', opts.model);
+  } else {
+    // 새 세션: --sandbox로 권한 우회 (codex.ts SSOT의 enum 값)
+    args.push('--json', '--sandbox', 'danger-full-access');
+    if (opts.model) args.push('--model', opts.model);
   }
   args.push('-');
   return args;
 }
 
-// codex exec --json event shapes (subset we care about)
+// codex exec --json event shapes — SSOT: claw/docs/codex-cli-spec.md
+// codex-cli 0.133+ 는 `thread.started` 이벤트로 thread_id 노출. 구버전(0.130)의
+// `session_meta`/`session_summary`도 fallback으로 유지 (호환성).
 interface CodexEvent {
   type?: string;
   item?: {
@@ -98,6 +104,8 @@ interface CodexEvent {
   session_id?: string;
   payload?: { id?: string };
   rollout_path?: string;
+  // thread.started (v0.133+)
+  thread_id?: string;
 }
 
 function tryParseJson(line: string): CodexEvent | null {
@@ -140,10 +148,14 @@ function newAccumulator(): ParseAccumulator {
 }
 
 function consumeEvent(acc: ParseAccumulator, event: CodexEvent): void {
-  if (event.type === 'session_summary') {
+  if (event.type === 'thread.started') {
+    // codex-cli 0.133+ — top-level thread_id
+    if (event.thread_id) acc.sessionId = event.thread_id;
+  } else if (event.type === 'session_summary') {
+    // legacy
     if (event.session_id) acc.sessionId = event.session_id;
   } else if (event.type === 'session_meta') {
-    // v0.130+: session ID is in payload.id
+    // v0.130
     if (event.payload?.id) acc.sessionId = event.payload.id;
   } else if (event.type === 'item.completed') {
     const t = extractItemText(event);

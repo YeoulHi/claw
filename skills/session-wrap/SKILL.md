@@ -54,10 +54,10 @@ advisor가 다음 형식으로 응답한다:
 - 사용자가 "나중에", "넘어가" 등으로 건너뛰면 즉시 3단계 진행
 
 ### 3단계: 병렬 에이전트 분배
-JSON 목록 크기에 따라 에이전트 수를 조정하여 병렬 실행한다.
+JSON 목록 크기에 따라 에이전트 수를 조정하여 병렬 실행한다. claw의 codex 엔진은 `multi_agent = true`가 활성화되어 있으므로 내부 sub-agent 분기로 처리하거나, 사용자 로컬 환경에서 별도 codex 세션을 spawn한다.
 - **목록 0개**: 커밋 없이 "업데이트할 내용이 없습니다." 한 줄로 종료
 - **목록 1~2개**: 에이전트 2개로 분배 (과도한 분산 방지)
-- **목록 3개 이상**: 에이전트 4개로 균등 분배
+- **목록 3개 이상**: 에이전트 4개로 균등 분배 (codex `multi_agent` 또는 병렬 pwsh 세션)
 - 에이전트당 독립적인 파일 집합 처리
 - 상호 의존이 있는 파일은 같은 에이전트에 묶음
 
@@ -68,7 +68,8 @@ JSON 목록 크기에 따라 에이전트 수를 조정하여 병렬 실행한�
 ### 5단계: 커밋 & 푸시
 - yeojin-context-hub repo에 변경 사항 커밋
 - 커밋 메시지 형식: `docs: YYYY-MM-DD 세션 맥락 업데이트` (날짜 자동 삽입)
-- **커밋 제외 대상**: `C:\WINDOWS\system32\config\systemprofile\.claude\` 하위 외부 메모리 파일 — claw 내부 메모리이므로 repo에 포함하지 않는다
+- Git remote는 HTTPS 고정 (`https://github.com/<owner>/<repo>`). 푸시는 `scripts/git-push.ps1 -Rebase` 사용 권장 (`$env:GH_TOKEN` 자동 로드).
+- **커밋 제외 대상**: NSSM `LocalSystem` 프로필 하위 외부 메모리 (`C:\WINDOWS\system32\config\systemprofile\` 아래 codex/claw 상태 파일) — claw 내부 메모리이므로 repo에 포함하지 않는다
 
 ## 자동 제안 원칙
 세션 종료 신호 감지 시 사용자가 명시적으로 요청하지 않아도:
@@ -77,6 +78,6 @@ JSON 목록 크기에 따라 에이전트 수를 조정하여 병렬 실행한�
 형식으로 1줄 자동 제안한다. "응", "예", "응 해줘" 등 긍정 응답 시 즉시 실행.
 
 ## 외부 메모리 커밋 제외 규칙
-- claw의 memory 파일(`MEMORY.md`, `*.md` in memory dir)은 claw 내부 상태
+- claw의 memory 파일(`MEMORY.md`, memory dir 내 `*.md`)과 NSSM LocalSystem 프로필(`C:\WINDOWS\system32\config\systemprofile\...`) 하위 codex/claw 상태 파일은 claw 내부 상태
 - yeojin-context-hub repo 커밋에 포함하면 안 됨
 - 실수로 staging 됐을 경우 `git reset HEAD <path>`로 제외 후 커밋
