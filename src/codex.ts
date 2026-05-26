@@ -151,9 +151,14 @@ function consumeEvent(acc: ParseAccumulator, event: CodexEvent): void {
   }
 }
 
+function getCodexHome(): string {
+  return process.env['CODEX_HOME'] ?? os.homedir();
+}
+
 async function lookupLatestCodexSessionId(): Promise<string> {
   // Codex stores sessions in ~/.codex/sessions/ (nested: YYYY/MM/DD/rollout-*.jsonl)
-  const sessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+  // CODEX_HOME overrides os.homedir() for non-standard service environments (e.g. NSSM LocalSystem).
+  const sessionsDir = path.join(getCodexHome(), '.codex', 'sessions');
   const entries = await fs.readdir(sessionsDir, { recursive: true }).catch(() => [] as string[]);
   let newest = '';
   let newestMtime = 0;
@@ -304,7 +309,7 @@ export function runCodex(opts: CodexRunOptions): Promise<CodexRunResult> {
           if (!acc.text) {
             throw new CodexError('codex run produced no assistant text', exitCode, stderrBuf);
           }
-          const sessionId = acc.sessionId || (await lookupLatestCodexSessionId());
+          const sessionId = acc.sessionId || await lookupLatestCodexSessionId().catch(() => crypto.randomUUID());
           const { text, artifacts } = extractArtifacts(acc.text);
           return { text, sessionId, durationMs, exitCode, artifacts, contextWindowUsed: 0, contextWindowMax: 0, costUsd: 0 };
         };
