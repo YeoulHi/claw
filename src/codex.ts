@@ -190,7 +190,41 @@ async function lookupLatestCodexSessionId(): Promise<string> {
   return uuidMatch ? uuidMatch[1] : basename;
 }
 
-export function runCodex(opts: CodexRunOptions): Promise<CodexRunResult> {
+/**
+ * resume 실패 stderr 패턴.
+ * - 사건 7(crypto.randomUUID fallback이 DB에 적재됐던 가짜 UUID로 resume 시도)
+ * - 또는 codex 측에서 rollout 파일 누락 / thread/resume RPC 실패
+ * 감지 시 fresh session으로 한 번 retry (silent fallback 아님 — 명시적 로그 + 진짜 새 세션 강제).
+ * SSOT: claw/docs/sop/ssot-first-debugging.md "fallback 함정"의 marker 패턴 적용.
+ */
+function isCodexResumeFailure(stderr: string): boolean {
+  return (
+    stderr.includes('no rollout found') ||
+    stderr.includes('thread/resume failed') ||
+    stderr.includes('thread/resume:')
+  );
+}
+
+export async function runCodex(opts: CodexRunOptions): Promise<CodexRunResult> {
+  try {
+    return await runCodexOnce(opts);
+  } catch (err) {
+    if (
+      opts.resume &&
+      err instanceof CodexError &&
+      isCodexResumeFailure(err.stderr)
+    ) {
+      log.warn(
+        { resume: opts.resume, stderrTail: err.stderr.slice(-200) },
+        'codex resume failed (stale or missing rollout) — retrying as fresh session',
+      );
+      return await runCodexOnce({ ...opts, resume: undefined });
+    }
+    throw err;
+  }
+}
+
+function runCodexOnce(opts: CodexRunOptions): Promise<CodexRunResult> {
   return (async () => {
     const start = Date.now();
     const args = buildArgs(opts);

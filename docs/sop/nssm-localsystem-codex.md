@@ -95,8 +95,11 @@ Node.js `child_process.spawn` 은 `.ps1` 을 **직접 실행할 수 없다** (Wi
 
 ### 3.1 실제 exe 경로 찾기 (dry-run)
 
+`bin/<hash>/` 디렉토리가 여러 개 있지만 **`codex.exe`가 들어 있는 폴더는 하나뿐**이다 (나머지는 `node_repl` 등 보조 바이너리). 단순 LastWriteTime 정렬은 빈 폴더를 뽑을 수 있으므로 `codex.exe` 존재 여부로 필터한다.
+
 ```powershell
 Get-ChildItem "C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin" -Directory |
+  Where-Object { Test-Path "$($_.FullName)\codex.exe" } |
   Sort-Object LastWriteTime -Descending |
   Select-Object -First 1 -ExpandProperty FullName
 ```
