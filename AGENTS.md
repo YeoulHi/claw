@@ -72,8 +72,8 @@ __CLAW_RESTART__
 | Shell snapshot | `features.shell_snapshot = true` | 이전 shell 상태(env, cwd) 일부 복원. 세션 연속성. |
 | Goals | `features.goals = true` | 멀티스텝 작업에서 내부 목표 트래킹. |
 
-**reasoning summary와 align/thinking 블록의 관계:**
-codex의 `model_reasoning_summary = "auto"`는 모델이 자체 생성하는 추출본으로 응답 본문에 별도 노출되지 않는다 (`codex.ts` `extractItemText`가 text 채널만 추출). claw가 요구하는 `## 🤔 align` / `## 💬 thinking`은 사용자 향한 사고 노출이므로 prompt.ts에서 명시 지시하면 그대로 동작하며, codex 내부 reasoning과 충돌하지 않는다.
+**reasoning summary와 align/think 블록의 관계:**
+codex의 `model_reasoning_summary = "auto"`는 모델이 자체 생성하는 추출본으로 응답 본문에 별도 노출되지 않는다 (`codex.ts` `extractItemText`가 text 채널만 추출). claw가 요구하는 `## 🤔 align` / `## 💬 think`은 사용자 향한 사고 노출이며 prompt.ts에서 명시 지시한 포맷대로 출력한다 (codex 내부 reasoning과 충돌하지 않음).
 
 ---
 
@@ -169,41 +169,43 @@ triggers:
 
 ---
 
-## Discord 응답 포맷 — 사고 여정 노출
+## Discord 응답 포맷 — 모바일 맞춤
 
-모든 응답 앞에 아래 구조를 출력한다.
+claw는 Discord 진입점이며 **모바일 화면 가독성**이 최우선이다.
+모든 응답은 아래 3개 섹션을 **이 순서·이 포맷 그대로** 출력한 뒤, 마지막에 실제 답변을 잇는다.
 
 ```
+## 🔧 tools
+
+- skill: <사용한 claw skill 이름들, 없으면 "(없음)">
+- tools: <사용한 외부 도구 — codex web_search, gh, node_repl, MCP 등. 없으면 "(없음)">
+
 ## 🤔 align
-(코드블럭: 요청을 어떻게 이해했는지 — 자연스러운 산문, 1~3문장)
 
-## 💬 thinking
-(코드블럭: 판단·라우팅 흐름 — 자연스러운 산문, 2~5문장)
+` ` `
+(코드블럭 안. 요청을 어떻게 이해했는지 자연어 5줄 내외.
+ 필요하면 ASCII diagram box 사용 — 모바일 폭 기준 ~30자 이내.)
+` ` `
 
-(실제 답변)
+## 💬 think
+
+` ` `
+(코드블럭 안. 판단·라우팅·실행 흐름 자연어 5줄 내외.
+ 필요하면 ASCII diagram box. 모바일에서 한 줄이 잘리지 않게 폭 ~30자 이내.)
+` ` `
+
+(이후 실제 답변 — 결론·실행 결과·다음 단계 중심으로 간결히)
 ```
 
-**실제 출력 형식 (Discord 렌더링 기준):**
-
-헤딩(`## 🤔 align`, `## 💬 thinking`)은 코드블럭 **밖**에 위치 → Discord가 굵은 헤딩으로 렌더링.
-내용은 코드블럭 **안**에 위치 → 모바일에서 고정폭 폰트로 일관되게 표시.
-
-```
-## 🤔 align
-```
-(요청 이해 내용)
-```
-
-## 💬 thinking
-```
-(판단 흐름 내용)
-```
-
-(실제 답변)
-```
+**Discord 렌더링 기준:**
+- 헤딩(`##`)은 코드블럭 **밖** → Discord가 굵은 헤딩으로 렌더링
+- align/think 본문은 코드블럭 **안** → 모바일에서 고정폭으로 일관 표시
+- 위 예시의 `` ` ` ` `` 표기는 실제로는 backtick 3개 (마크다운 충돌 회피를 위해 공백 삽입한 것)
 
 **작성 규칙:**
-- bullet·번호 없이 자연스러운 산문으로 작성 — LLM이 실제로 생각하는 흐름 그대로
-- 한 줄 = 한 사고 단위 (모바일 가독성)
-- align: 요청에서 파악한 것, 빠진 맥락, 라우팅 판단 근거
-- thinking: advisor 위임 여부, 처리 방식, 주요 판단 포인트
+- tools 섹션은 bullet 2줄 고정 (`skill:` / `tools:`). 빈 경우 `(없음)`이라도 명시.
+- align: 사용자 요청에서 파악한 것·맥락·라우팅 판단 근거를 자연어 5줄 내외.
+- think: 처리 방식·advisor 위임 여부·주요 판단 포인트를 자연어 5줄 내외.
+- 코드블럭 안 텍스트는 **줄당 ~30자**를 넘기지 않게 줄바꿈 (모바일 가로폭 가독성).
+- ASCII diagram이 도움이 될 때만 삽입. 박스 폭도 ~30자 이내.
+- 실제 답변은 핵심부터 먼저 (2000자 초과 시 claw가 자동 분할).

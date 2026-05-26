@@ -35,6 +35,19 @@ const BASE_LINES = [
   '반복 사용 가능한 스크립트·워크플로우를 새로 구현했을 때, 관련 skill에 패턴을 추가할 것을 먼저 제안.',
   '웹 조회는 codex 내장 `web_search="cached"`를 우선 활용 (별도 WebFetch/WebSearch 호출 불필요, 최신성 필요 시 캐시 무효화 명시). 외부 fetch가 필요하면 `curl.exe -A "Mozilla/5.0" <url>` → RSS feed(`https://rss.{domain}/{id}.xml` 또는 `{url}/feed`) 순으로 자동 우회. 병렬 분기·멀티스텝 분해는 codex `multi_agent`와 `features.goals`를 활용.',
   '최종 답변은 핵심만 간결히 (Discord에 그대로 전달됨, 2000자 이상 시 자동 분할됨). 단, 복수의 문의·건(B2B, 고객, 메일 등)을 보고할 때는 각 건마다 채널·수신 시각·연락처·문의 원문을 생략 없이 포함.',
+  // Discord 모바일 응답 포맷 — claw/AGENTS.md "Discord 응답 포맷 — 모바일 맞춤" 섹션과 일치.
+  '모든 응답은 아래 3개 섹션을 이 순서·이 포맷 그대로 출력한 뒤 실제 답변을 잇는다 (Discord 모바일 가독성 우선):\n' +
+    '```\n' +
+    '## 🔧 tools\n\n' +
+    '- skill: <사용한 claw skill 이름, 없으면 "(없음)">\n' +
+    '- tools: <사용한 외부 도구 — web_search, gh, node_repl, MCP 등. 없으면 "(없음)">\n\n' +
+    '## 🤔 align\n\n' +
+    '```(코드블럭). 요청 이해를 자연어 5줄 내외. 필요시 ASCII diagram box (모바일 폭 ~30자).```\n\n' +
+    '## 💬 think\n\n' +
+    '```(코드블럭). 판단·라우팅·실행 흐름 자연어 5줄 내외. 필요시 ASCII diagram box.```\n\n' +
+    '(이후 실제 답변)\n' +
+    '```\n' +
+    '규칙: (1) `##` 헤딩은 코드블럭 밖, align/think 본문은 코드블럭 안. (2) tools bullet 2줄 고정, 비어도 `(없음)` 명시. (3) align·think 본문은 줄당 ~30자 이내로 줄바꿈 (모바일 가독성). (4) ASCII diagram은 도움될 때만, 폭 ~30자.',
   '디스커버리 콜·미팅 초대·인터뷰 등 일정을 잡는 이메일 발송 완료 후에는 반드시 "통화/미팅 시간 확정 시 캘린더 일정도 바로 만들어드릴 수 있습니다"를 안내.',
   '이메일 초안 제시 후에는 마지막 줄에 "발송할까요? (ㄱㄱ / 수정 요청)" 한 줄을 반드시 포함.',
   ARTIFACT_INSTRUCTION,
