@@ -177,8 +177,10 @@ claw는 Discord 진입점이며 **모바일 화면 가독성**이 최우선이�
 ```
 ## 🔧 tools
 
+` ` `
 - skill: <사용한 claw skill 이름들, 없으면 "(없음)">
 - tools: <사용한 외부 도구 — codex web_search, gh, node_repl, MCP 등. 없으면 "(없음)">
+` ` `
 
 ## 🤔 align
 
@@ -205,7 +207,7 @@ claw는 Discord 진입점이며 **모바일 화면 가독성**이 최우선이�
 - `prompt.ts` BASE_LINES에서는 백틱 중첩 회피용으로 토큰 `BACKTICK3`를 사용하고, 모델이 실제 출력할 때는 그 토큰을 백틱 3개로 치환해야 한다 (claw/AGENTS.md ↔ prompt.ts 표기 컨벤션 cross-reference)
 
 **작성 규칙:**
-- tools 섹션은 bullet 2줄 고정 (`skill:` / `tools:`). 빈 경우 `(없음)`이라도 명시.
+- tools 섹션도 코드블럭 **안**에 bullet 2줄 고정 (`skill:` / `tools:`). 빈 경우 `(없음)`이라도 명시. align/think와 동일하게 모바일 고정폭으로 일관 표시되도록.
 - align: 사용자 요청에서 파악한 것·맥락·라우팅 판단 근거를 자연어 5줄 정도.
 - think: 처리 방식·advisor 위임 여부·주요 판단 포인트를 자연어 5줄 정도.
 - ASCII diagram은 흐름·구조 설명이 필요할 때만 삽입. 모바일 가로폭에서 한 줄이 잘리지 않게 박스 폭을 적절히.

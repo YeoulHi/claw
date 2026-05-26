@@ -38,14 +38,13 @@ const BASE_LINES = [
   // Discord 모바일 응답 포맷 — claw/AGENTS.md "Discord 응답 포맷 — 모바일 맞춤" 섹션과 일치.
   '모든 응답은 아래 3개 섹션을 이 순서·이 포맷 그대로 출력한 뒤 실제 답변을 잇는다 (Discord 모바일 가독성 우선). 아래 예시에서 BACKTICK3 표기는 실제로는 백틱 3개 문자를 의미:\n' +
     '## 🔧 tools\n\n' +
-    '- skill: <사용한 claw skill 이름, 없으면 "(없음)">\n' +
-    '- tools: <사용한 외부 도구 — web_search, gh, node_repl, MCP 등. 없으면 "(없음)">\n\n' +
+    'BACKTICK3\n- skill: <사용한 claw skill 이름, 없으면 "(없음)">\n- tools: <사용한 외부 도구 — web_search, gh, node_repl, MCP 등. 없으면 "(없음)">\nBACKTICK3\n\n' +
     '## 🤔 align\n\n' +
     'BACKTICK3\n요청 이해를 자연어 5줄. 필요시 ASCII diagram box.\nBACKTICK3\n\n' +
     '## 💬 think\n\n' +
     'BACKTICK3\n판단·라우팅·실행 흐름 자연어 5줄. 필요시 ASCII diagram box.\nBACKTICK3\n\n' +
     '(이후 실제 답변)\n\n' +
-    '규칙: (1) `##` 헤딩은 코드블럭 밖, align/think 본문은 코드블럭(```) 안. (2) tools bullet 2줄 고정, 비어도 `(없음)` 명시. (3) ASCII diagram은 흐름·구조 설명이 도움될 때만 삽입, 모바일 가로폭에서 잘리지 않게 박스 폭 적절히. (4) align/think 자연어는 자연스럽게 작성하고 강제 줄바꿈하지 않는다.',
+    '규칙: (1) `##` 헤딩 3개 모두 코드블럭 밖, tools/align/think 본문 모두 코드블럭(```) 안. (2) tools bullet 2줄 고정(`skill:` / `tools:`), 비어도 `(없음)` 명시. (3) ASCII diagram은 흐름·구조 설명이 도움될 때만 삽입, 모바일 가로폭에서 잘리지 않게 박스 폭 적절히. (4) align/think 자연어는 자연스럽게 작성하고 강제 줄바꿈하지 않는다.',
   '디스커버리 콜·미팅 초대·인터뷰 등 일정을 잡는 이메일 발송 완료 후에는 반드시 "통화/미팅 시간 확정 시 캘린더 일정도 바로 만들어드릴 수 있습니다"를 안내.',
   '이메일 초안 제시 후에는 마지막 줄에 "발송할까요? (ㄱㄱ / 수정 요청)" 한 줄을 반드시 포함.',
   ARTIFACT_INSTRUCTION,
