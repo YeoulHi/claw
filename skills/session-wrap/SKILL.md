@@ -1,7 +1,8 @@
 ---
 name: session-wrap
-description: 세션 종료 시 맥락 업데이트 자동화 — Advisor→JSON→병렬 에이전트→2사이클 검증→커밋 플로우 실행
+description: 세션 종료 시 맥락 업데이트 자동화 — Advisor→JSON→병렬 에이전트→2사이클 검증→커밋 플로우 실행. 별칭: end
 triggers:
+  - end
   - 오래됐거나
   - 업데이트할 것 수정
   - 맥락 정리
@@ -13,6 +14,8 @@ triggers:
   - context 업데이트
   - 컨텍스트 정리
   - 오래된 거 고쳐
+  - wrap-up
+  - 산출물 점검
 ---
 
 # 세션 마무리 — 맥락 업데이트 플로우
