@@ -21,6 +21,8 @@
 | Git remote | HTTPS 고정 (`https://github.com/<owner>/<repo>`) — DUWLS LocalSystem 환경에서 SSH push 불가 |
 | GH token | `$env:GH_TOKEN` (PowerShell profile에서 `gh auth token`으로 자동 로드) |
 
+claw runtime은 Codex OAuth만 사용한다. `CLAUDE_CODE_OAUTH_TOKEN`은 config schema와 `.env.example`에서 제거하며, Codex 인증은 `CODEX_HOME\auth.json`을 SSOT로 본다.
+
 ---
 
 ## 2. macOS / Claude Code → Windows / codex 어휘 매핑
@@ -106,7 +108,7 @@
 | Dashboard | `http://localhost:3200` |
 | codex auth | `C:\Users\yeoul\.codex\auth.json` |
 | codex config | `C:\Users\yeoul\.codex\config.toml` |
-| codex sessions | `C:\Users\yeoul\.codex\sessions\` (NSSM LocalSystem 환경에서는 `CODEX_HOME` 환경변수로 지정 필수) |
+| codex sessions | `C:\Users\yeoul\.codex\sessions\` (NSSM LocalSystem 환경에서는 `CODEX_HOME=C:\Users\yeoul\.codex` 환경변수 지정 필수) |
 | codex exe | `C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin\<hash>\codex.exe` |
 
 ---

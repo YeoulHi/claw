@@ -21,6 +21,8 @@
 | Git remote | HTTPS 고정 (`https://github.com/<owner>/<repo>`) — LocalSystem 환경에서 SSH push 불가 |
 | GH token | `$env:GH_TOKEN` (PowerShell profile에서 `gh auth token`으로 자동 로드) |
 
+claw는 Codex OAuth만 사용한다. `CLAUDE_CODE_OAUTH_TOKEN`은 필요하지 않으며, config schema에서도 요구하지 않는다.
+
 **셸 어휘 규칙 (pwsh 7.6.x):**
 - 환경변수: `$env:VAR` (bash `$VAR` 금지)
 - 줄 연속: 백틱 `` ` `` (bash `\` 금지)

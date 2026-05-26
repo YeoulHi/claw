@@ -167,10 +167,18 @@ function getCodexHome(): string {
   return process.env['CODEX_HOME'] ?? os.homedir();
 }
 
+function getCodexSessionsDir(): string {
+  const codexHome = getCodexHome();
+  if (path.basename(codexHome).toLowerCase() === '.codex') {
+    return path.join(codexHome, 'sessions');
+  }
+  return path.join(codexHome, '.codex', 'sessions');
+}
+
 async function lookupLatestCodexSessionId(): Promise<string> {
   // Codex stores sessions in ~/.codex/sessions/ (nested: YYYY/MM/DD/rollout-*.jsonl)
   // CODEX_HOME overrides os.homedir() for non-standard service environments (e.g. NSSM LocalSystem).
-  const sessionsDir = path.join(getCodexHome(), '.codex', 'sessions');
+  const sessionsDir = getCodexSessionsDir();
   const entries = await fs.readdir(sessionsDir, { recursive: true }).catch(() => [] as string[]);
   let newest = '';
   let newestMtime = 0;

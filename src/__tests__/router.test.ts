@@ -22,7 +22,6 @@ function makeConfig(): AppConfig {
   const dataDir = path.join(os.tmpdir(), `claw-router-test-${process.pid}`);
   return {
     env: {
-      CLAUDE_CODE_OAUTH_TOKEN: 'tok',
       GH_TOKEN: 'ghp',
       DISCORD_BOT_TOKEN: 'discord-tok',
       DISCORD_APPLICATION_ID: 'app-id',

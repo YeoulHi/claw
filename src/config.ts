@@ -5,7 +5,6 @@ import os from 'node:os';
 import fs from 'node:fs';
 
 const Schema = z.object({
-  CLAUDE_CODE_OAUTH_TOKEN: z.string().min(1),
   GH_TOKEN: z.string().min(1),
 
   DISCORD_BOT_TOKEN: z.string().min(1),
