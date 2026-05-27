@@ -19,7 +19,7 @@
 | codex 바이너리 | `CODEX_BIN=C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin\<hash>\codex.exe` (npm wrapper `codex.ps1`은 spawn 불가) |
 | Home dir | `$env:USERPROFILE` 또는 절대경로 `C:\Users\yeoul\...` (절대 `~/` 쓰지 말 것) |
 | Git remote | HTTPS 고정 (`https://github.com/<owner>/<repo>`) — LocalSystem 환경에서 SSH push 불가 |
-| GH token | `$env:GH_TOKEN` (PowerShell profile에서 `gh auth token`으로 자동 로드) |
+| GH token | **서비스(SYSTEM 계정)**: `claw/.env`의 `GH_TOKEN`이 정본 — profile 로드 안 됨. **사용자 세션**: `$env:GH_TOKEN` (PowerShell profile에서 `gh auth token`으로 자동 로드). PAT(`ghp_`) 교체 시 `.env`도 함께 갱신 필수. 갱신 SOP: `notes/windows-ps76-issues.md` [2026-05-27]. |
 
 claw는 Codex OAuth만 사용한다. `CLAUDE_CODE_OAUTH_TOKEN`은 필요하지 않으며, config schema에서도 요구하지 않는다.
 
@@ -165,6 +165,7 @@ triggers:
 - **HTTPS 고정**: `git remote set-url origin https://github.com/<owner>/<repo>` (SSH push 불가)
 - **인증 setup (idempotent)**: `gh auth setup-git` — 여러 번 실행해도 안전. `$env:GH_TOKEN` 자동 인식.
 - **push 스크립트**: `scripts/git-push.ps1 -Rebase` (pull --rebase → push)
+- **NSSM AppEnvironmentExtra PATH**: SYSTEM 계정 기본 PATH에는 node/gh/git 없음 → 명시적 설정 필수. 현재 설정값 및 변경 절차: `OPS.md` 환경 섹션. 변경 시 `notes/windows-ps76-issues.md` [2026-05-27] 참조.
 - **금지**: `-f` 강제 push, `--no-verify`, `--no-gpg-sign` (사용자 명시 요청 시에만)
 
 ---

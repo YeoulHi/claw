@@ -103,6 +103,63 @@ PowerShell(SYSTEM 계정 환경)이 스크립트 파일을 시스템 기본 인�
 
 ---
 
+### [2026-05-27] GH_TOKEN 토큰 종류 불일치 (OAuth vs PAT)
+
+**증상:** claw `.env`의 `GH_TOKEN`이 OAuth 토큰(`gho_` 접두사)이고,
+현재 `gh auth token`이 반환하는 활성 인증은 PAT(`ghp_` 접두사) — 두 값이 불일치.
+
+**원인:** 계정에 OAuth(`gho_`)와 PAT(`ghp_`) 토큰이 모두 존재할 수 있으며,
+`.env`에 박힌 토큰이 현재 활성 인증과 다른 종류인 경우 SYSTEM 계정 컨텍스트에서 인증 실패.
+
+**해결책:** 현재 live PAT로 `.env` 갱신.
+
+```powershell
+# 현재 토큰 vs .env 토큰 앞 10자 비교
+$token = (Select-String -Path "C:\yeojin-context-hub\claw\.env" -Pattern "^GH_TOKEN=").Line -replace "GH_TOKEN=",""
+"env  : $($token.Substring(0,10))..."
+"live : $((gh auth token).Substring(0,10))..."
+
+# 불일치 확인 시 .env 갱신
+$live = gh auth token
+(Get-Content "C:\yeojin-context-hub\claw\.env") -replace "^GH_TOKEN=.*", "GH_TOKEN=$live" | Set-Content "C:\yeojin-context-hub\claw\.env"
+```
+
+갱신 후 `Restart-Service claw` 필수 (서비스가 기동 시 `.env` 로드).
+
+**참고:** `gho_` vs `ghp_` 접두사로 토큰 종류 구분 가능. `gh auth token`은 항상 현재 활성 PAT 반환.
+
+---
+
+### [2026-05-27] NSSM AppEnvironmentExtra PATH 미설정으로 spawn node ENOENT
+
+**증상:** claw 서비스 재시작 시 `StartPending` 상태에서 멈춤. stderr 로그에 다음 에러:
+
+```
+Error: spawn node ENOENT
+  errno: -4058, code: 'ENOENT', syscall: 'spawn node',
+  path: 'node', spawnargs: ['C:\\yeojin-context-hub\\claw\\dist\\worker.js']
+```
+
+**원인:** NSSM `AppEnvironmentExtra`에 `PATH=...`를 명시하면 시스템 기본 PATH를 **완전히 대체**한다.
+`C:\Program Files\nodejs`가 포함되지 않아 SYSTEM 계정이 `node` 바이너리를 찾지 못함.
+
+**해결책:** `AppEnvironmentExtra`에 필요한 경로를 모두 포함한 PATH 명시.
+
+```powershell
+nssm set claw AppEnvironmentExtra `
+  "CODEX_HOME=C:\Users\yeoul\.codex`nCODEX_BIN=C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin\3f4fb8cdd344abc7\codex.exe`nPATH=C:\Program Files\nodejs;C:\Users\yeoul\scoop\shims;C:\Windows\System32;C:\Windows;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+Restart-Service claw
+```
+
+**현재 설정값:** `OPS.md` 환경 섹션이 정본. `nssm get claw AppEnvironmentExtra`로 실시간 조회 가능.
+
+**주의:** `AppEnvironmentExtra`에 `PATH=` 항목을 추가하거나 수정할 때는
+기존 PATH 항목 전체를 재작성해야 한다 (append가 아닌 replace 방식).
+
+**참고:** `where.exe node` 또는 `(Get-Command node).Source`로 node 실제 경로 확인.
+
+---
+
 ## 추가 예정 (미검증)
 
 <!-- ps76-pending-anchor -->

@@ -18,6 +18,13 @@ claw 운영 중 발생하는 문제 — 재시작, 포트 충돌, 빌드 반영 
 - 로그: `C:\yeojin-context-hub\claw\logs/`
 - **프로세스 supervisor**: NSSM 서비스 (서비스명 `claw`, AppDirectory `C:\yeojin-context-hub\claw`, StartName `LocalSystem`). 부팅 시 자동 시작. 등록 절차는 `docs/sessions/2026-05-19.md`의 004-05d 섹션 참조.
 - **NSSM 로그**: `logs/` 아래 stdout/stderr 리다이렉트 파일 (실제 파일명은 `nssm get claw AppStdout` / `AppStderr`로 확인)
+- **NSSM AppEnvironmentExtra (2026-05-27 기준):**
+  ```
+  CODEX_HOME=C:\Users\yeoul\.codex
+  CODEX_BIN=C:\Users\yeoul\AppData\Local\OpenAI\Codex\bin\3f4fb8cdd344abc7\codex.exe
+  PATH=C:\Program Files\nodejs;C:\Users\yeoul\scoop\shims;C:\Windows\System32;C:\Windows;C:\Program Files\Git\cmd;C:\Program Files\Git\bin
+  ```
+  > `AppEnvironmentExtra`에 PATH를 명시하면 시스템 기본 PATH를 **완전히 대체**한다. node/gh/git 경로를 모두 포함해야 함. 변경 시 `notes/windows-ps76-issues.md` [2026-05-27] 항목 참조.
 
 ---
 
